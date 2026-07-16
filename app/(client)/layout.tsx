@@ -16,6 +16,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PageLoader } from '@/components/PageLoader';
 
 export default function ClientLayout({
   children,
@@ -54,7 +55,6 @@ export default function ClientLayout({
     { href: '/contacts', label: 'Контакты' },
   ];
 
-  // Определяем класс хедера в зависимости от темы
   const headerClass = isDark 
     ? 'bg-[#0F0A1A]/95 backdrop-blur-xl border-[#2A1A3E] shadow-lg shadow-black/20' 
     : 'bg-white/95 backdrop-blur-xl border-[#F0E7FF] shadow-sm shadow-black/5';
@@ -161,14 +161,14 @@ export default function ClientLayout({
 
       {/* ===== MAIN ===== */}
       <main className="flex-1 pt-16 md:pt-20">
-        {children}
+        <PageLoader>{children}</PageLoader>
       </main>
 
       {/* ===== FOOTER ===== */}
       <footer className="bg-gray-900 dark:bg-gray-950 text-gray-400">
         {/* Newsletter */}
-        <div className="border-b border-gray-800/50">
-          <div className="container mx-auto px-4 py-10 md:py-14">
+        <div className="border-b border-gray-800/50 md:py-18 py-8">
+          <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-3">
                 <Send className="w-3 h-3" />
@@ -196,12 +196,12 @@ export default function ClientLayout({
         </div>
 
         {/* Footer Main */}
-        <div className="container mx-auto px-4 py-10 md:py-14">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
+        <div className="container mx-auto px-4 py-16 md:py-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 md:py-16">
             {/* Бренд */}
-            <div className="col-span-2 md:col-span-1">
+            <div className="col-span-2 md:col-span-1 py-4 md:py-0">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-lg font-bold text-white">SLOTLY</span>
@@ -236,7 +236,7 @@ export default function ClientLayout({
               <h5 className="text-white font-semibold text-xs uppercase tracking-wider mb-3.5 opacity-80">
                 Услуги
               </h5>
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-2.5 text-sm">
                 <li><a href="/services#hair" className="text-gray-400 hover:text-white transition-colors">Стрижки</a></li>
                 <li><a href="/services#color" className="text-gray-400 hover:text-white transition-colors">Окрашивание</a></li>
                 <li><a href="/services#nails" className="text-gray-400 hover:text-white transition-colors">Маникюр</a></li>
@@ -249,7 +249,7 @@ export default function ClientLayout({
               <h5 className="text-white font-semibold text-xs uppercase tracking-wider mb-3.5 opacity-80">
                 Информация
               </h5>
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-2.5 text-sm">
                 <li><a href="/" className="text-gray-400 hover:text-white transition-colors">Главная</a></li>
                 <li><a href="/masters" className="text-gray-400 hover:text-white transition-colors">Наши мастера</a></li>
                 <li><a href="/contacts" className="text-gray-400 hover:text-white transition-colors">Контакты</a></li>
@@ -262,7 +262,7 @@ export default function ClientLayout({
               <h5 className="text-white font-semibold text-xs uppercase tracking-wider mb-3.5 opacity-80">
                 Контакты
               </h5>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2.5">
                   <Phone className="w-4 h-4 mt-0.5 text-purple-400 flex-shrink-0" />
                   <a href="tel:+74951234567" className="text-gray-400 hover:text-white transition-colors">
@@ -279,7 +279,7 @@ export default function ClientLayout({
                     info@luxestyle.ru
                   </a>
                 </li>
-                <li className="pt-2.5 mt-1 border-t border-gray-800/50 text-xs text-gray-500">
+                <li className="pt-3 mt-1 border-t border-gray-800/50 text-xs text-gray-500">
                   <div>Пн-Пт: 09:00 — 21:00</div>
                   <div>Сб-Вс: 10:00 — 19:00</div>
                 </li>
@@ -288,7 +288,7 @@ export default function ClientLayout({
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-gray-800/50 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-gray-500">
+          <div className="py-8 border-t border-gray-800/50 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
             <p className="text-center md:text-left">
               © {new Date().getFullYear()} SLOTLY Beauty Studio. Все права защищены.
             </p>
