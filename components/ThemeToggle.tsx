@@ -10,6 +10,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
+    // Проверяем сохранённую тему
     const saved = localStorage.getItem('theme') as 'light' | 'dark' | null;
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const initial = saved || (prefersDark ? 'dark' : 'light');
@@ -24,15 +25,11 @@ export function ThemeToggle() {
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
-  // Не рендерим на сервере
+  // Не рендерим на сервере (избегаем гидратации)
   if (!mounted) {
     return (
-      <button className="theme-toggle" aria-label="Переключить тему">
-        <div className="toggle-icons">
-          <Sun className="sun-icon w-3.5 h-3.5" />
-          <Moon className="moon-icon w-3.5 h-3.5" />
-        </div>
-        <div className="toggle-thumb" />
+      <button className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <span className="w-5 h-5" />
       </button>
     );
   }
@@ -40,14 +37,25 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="theme-toggle"
+      className="relative w-12 h-7 rounded-full transition-all duration-300 flex items-center flex-shrink-0"
+      style={{
+        background: theme === 'dark' ? '#7C3AED' : '#E5E7EB',
+      }}
       aria-label="Переключить тему"
     >
-      <div className="toggle-icons">
-        <Sun className="sun-icon w-3.5 h-3.5" />
-        <Moon className="moon-icon w-3.5 h-3.5" />
+      {/* Иконки */}
+      <div className="absolute inset-0 flex items-center justify-between px-1.5 z-10">
+        <Sun className="w-3.5 h-3.5 text-white/70" />
+        <Moon className="w-3.5 h-3.5 text-white/70" />
       </div>
-      <div className="toggle-thumb" />
+      
+      {/* Круглый ползунок */}
+      <div
+        className="w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300 z-20"
+        style={{
+          transform: theme === 'dark' ? 'translateX(20px)' : 'translateX(2px)',
+        }}
+      />
     </button>
   );
 }
