@@ -12,14 +12,13 @@ import {
   Home,
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  LogOut
 } from 'lucide-react';
+import { AdminAuth } from '@/components/AdminAuth';
+import { toast } from 'sonner';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -29,6 +28,12 @@ export default function AdminLayout({
     { href: '/admin/masters', label: 'Мастера', icon: Users },
     { href: '/admin/services', label: 'Услуги', icon: Scissors },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth');
+    toast.success('👋 Выход выполнен');
+    window.location.href = '/admin';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -66,11 +71,21 @@ export default function AdminLayout({
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t">
-          <Link href="/" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 w-full">
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t space-y-1">
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 w-full"
+          >
             <Home className="w-5 h-5" />
             На сайт
           </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 w-full transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            Выйти
+          </button>
         </div>
       </aside>
 
@@ -83,7 +98,7 @@ export default function AdminLayout({
             </button>
             <div className="flex items-center gap-3 ml-auto">
               <span className="text-sm text-gray-500">Администратор</span>
-              <div className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
                 А
               </div>
             </div>
@@ -93,5 +108,17 @@ export default function AdminLayout({
         <main className="p-4 md:p-6">{children}</main>
       </div>
     </div>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AdminAuth>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </AdminAuth>
   );
 }
