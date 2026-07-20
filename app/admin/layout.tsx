@@ -1,9 +1,9 @@
 // app/admin/layout.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Calendar,
@@ -15,12 +15,17 @@ import {
   Sparkles,
   LogOut
 } from 'lucide-react';
-import { AdminAuth } from '@/components/AdminAuth';
 import { toast } from 'sonner';
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const menu = [
     { href: '/admin', label: 'Главная', icon: LayoutDashboard },
@@ -30,10 +35,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('adminAuth');
+    }
     toast.success('👋 Выход выполнен');
-    window.location.href = '/admin';
+    router.push('/admin');
   };
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -116,9 +127,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AdminAuth>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
-    </AdminAuth>
-  );
+  return <AdminLayoutContent>{children}</AdminLayoutContent>;
 }

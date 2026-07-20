@@ -1,7 +1,7 @@
 // components/AdminAuth.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lock, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,20 +14,26 @@ export function AdminAuth({ children }: AdminAuthProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Пароль для входа (можно изменить)
-  const ADMIN_PASSWORD = 'admin123';
+  // Проверяем сессию только на клиенте
+  useEffect(() => {
+    setIsMounted(true);
+    const saved = localStorage.getItem('adminAuth');
+    if (saved === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     setTimeout(() => {
-      if (password === ADMIN_PASSWORD) {
+      if (password === 'admin123') {
         setIsAuthenticated(true);
-        toast.success('✅ Добро пожаловать в админ-панель!');
-        // Сохраняем сессию в localStorage
         localStorage.setItem('adminAuth', 'true');
+        toast.success('✅ Добро пожаловать в админ-панель!');
       } else {
         toast.error('❌ Неверный пароль');
         setPassword('');
@@ -36,13 +42,10 @@ export function AdminAuth({ children }: AdminAuthProps) {
     }, 500);
   };
 
-  // Проверяем сохранённую сессию при загрузке
-  useState(() => {
-    const saved = localStorage.getItem('adminAuth');
-    if (saved === 'true') {
-      setIsAuthenticated(true);
-    }
-  });
+  // Пока не смонтировался — ничего не рендерим
+  if (!isMounted) {
+    return null;
+  }
 
   if (isAuthenticated) {
     return <>{children}</>;
