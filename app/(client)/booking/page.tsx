@@ -1,13 +1,13 @@
 // app/(client)/booking/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, 
   Sparkles, 
-  Clock, 
   User, 
   Phone, 
   Mail, 
@@ -17,20 +17,18 @@ import {
   XCircle
 } from 'lucide-react';
 
-// Временные демо-данные (потом заменим на реальные)
-const services = [
-  { id: 1, name: 'Женская стрижка', duration: 60, price: 2500 },
-  { id: 2, name: 'Окрашивание', duration: 120, price: 4500 },
-  { id: 3, name: 'Маникюр', duration: 90, price: 2000 },
-  { id: 4, name: 'Педикюр', duration: 60, price: 2500 },
-  { id: 5, name: 'Чистка лица', duration: 60, price: 3000 },
-];
+interface Service {
+  id: string;
+  name: string;
+  duration: number;
+  price: number;
+}
 
-const masters = [
-  { id: 1, name: 'Анна Смирнова', specialty: 'Парикмахер' },
-  { id: 2, name: 'Екатерина Иванова', specialty: 'Маникюр' },
-  { id: 3, name: 'Мария Петрова', specialty: 'Косметолог' },
-];
+interface Master {
+  id: string;
+  name: string;
+  specialty: string;
+}
 
 const timeSlots = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -40,11 +38,18 @@ const timeSlots = [
 ];
 
 export default function BookingPage() {
+  const searchParams = useSearchParams();
+  const presetServiceId = searchParams.get('service');
+  const presetMasterId = searchParams.get('master');
+
+  const [services, setServices] = useState<Service[]>([]);
+  const [masters, setMasters] = useState<Master[]>([]);
+  const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    service: '',
-    master: '',
+    service: presetServiceId || '',
+    master: presetMasterId || '',
     date: '',
     time: '',
     name: '',
@@ -53,58 +58,60 @@ export default function BookingPage() {
     notes: '',
   });
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [servicesRes, mastersRes] = await Promise.all([
+        fetch('/api/admin/services'),
+        fetch('/api/admin/masters'),
+      ]);
+      const servicesData = await servicesRes.json();
+      const mastersData = await mastersRes.json();
+      setServices(servicesData);
+      setMasters(mastersData);
+    } catch (error) {
+      toast.error('Ошибка загрузки данных');
+    }
+    setLoading(false);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
-    // Проверка заполнения полей
     if (!formData.service || !formData.master || !formData.date || !formData.time || !formData.name || !formData.phone) {
-      toast.error('Заполните все обязательные поля', {
-        description: 'Пожалуйста, проверьте форму',
-        icon: <XCircle className="w-5 h-5" />,
-        duration: 3000,
-      });
-      setIsLoading(false);
+      toast.error('Заполните все обязательные поля');
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      // Имитация отправки
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // ===== ОТПРАВКА В TELEGRAM =====
-      try {
-        const bookingData = {
+      // Создаём запись в БД
+      const res = await fetch('/api/admin/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           clientName: formData.name,
           clientPhone: formData.phone,
-          clientEmail: formData.email || 'не указан',
-          service: formData.service,
-          master: formData.master,
-          date: new Date(formData.date).toLocaleDateString('ru-RU'),
-          time: formData.time,
-          notes: formData.notes || '',
-        };
+          clientEmail: formData.email || null,
+          startTime: new Date(`${formData.date}T${formData.time}`).toISOString(),
+          masterId: formData.master,
+          serviceId: formData.service,
+          notes: formData.notes || null,
+        }),
+      });
 
-        const response = await fetch('/api/telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bookingData),
-        });
-
-        if (!response.ok) {
-          console.error('Ошибка отправки в Telegram:', await response.text());
-        }
-      } catch (error) {
-        console.error('Ошибка отправки в Telegram:', error);
+      if (!res.ok) {
+        throw new Error('Ошибка создания записи');
       }
 
-      console.log('Данные записи:', formData);
-
-      // Кастомное уведомление об успехе
       toast.custom((t) => (
         <div className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-green-100 shadow-lg max-w-sm">
           <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -112,15 +119,10 @@ export default function BookingPage() {
           </div>
           <div>
             <p className="font-semibold text-gray-900">✅ Запись создана!</p>
-            <p className="text-sm text-gray-500">
-              {formData.service} · {formData.master} · {new Date(formData.date).toLocaleDateString('ru-RU')} в {formData.time}
-            </p>
-            <p className="text-sm text-gray-400 mt-1">Мы ждём вас! ❤️</p>
+            <p className="text-sm text-gray-500">Мы ждём вас! ❤️</p>
           </div>
         </div>
-      ), {
-        duration: 5000,
-      });
+      ), { duration: 5000 });
 
       // Сброс формы
       setFormData({
@@ -137,25 +139,32 @@ export default function BookingPage() {
 
     } catch (error) {
       toast.error('Ошибка при создании записи', {
-        description: 'Попробуйте еще раз или свяжитесь с нами по телефону',
-        icon: <XCircle className="w-5 h-5" />,
-        duration: 4000,
+        description: 'Попробуйте еще раз',
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-3xl">
-        {/* Назад */}
         <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 transition-colors mb-6">
           <ArrowLeft className="w-4 h-4" />
           На главную
         </Link>
 
-        {/* Заголовок */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -199,7 +208,7 @@ export default function BookingPage() {
                   >
                     <option value="">Выберите услугу</option>
                     {services.map((s) => (
-                      <option key={s.id} value={s.name}>
+                      <option key={s.id} value={s.id}>
                         {s.name} — {s.price}₽ ({s.duration} мин)
                       </option>
                     ))}
@@ -219,7 +228,7 @@ export default function BookingPage() {
                   >
                     <option value="">Выберите мастера</option>
                     {masters.map((m) => (
-                      <option key={m.id} value={m.name}>
+                      <option key={m.id} value={m.id}>
                         {m.name} — {m.specialty}
                       </option>
                     ))}
@@ -230,16 +239,12 @@ export default function BookingPage() {
                   type="button"
                   onClick={() => {
                     if (!formData.service || !formData.master) {
-                      toast.warning('Выберите услугу и мастера', {
-                        description: 'Пожалуйста, заполните все поля',
-                        icon: <XCircle className="w-5 h-5" />,
-                        duration: 3000,
-                      });
+                      toast.warning('Выберите услугу и мастера');
                       return;
                     }
                     setStep(2);
                   }}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all"
+                  className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
                 >
                   Далее
                 </button>
@@ -294,16 +299,12 @@ export default function BookingPage() {
                     type="button"
                     onClick={() => {
                       if (!formData.date || !formData.time) {
-                        toast.warning('Выберите дату и время', {
-                          description: 'Пожалуйста, заполните все поля',
-                          icon: <XCircle className="w-5 h-5" />,
-                          duration: 3000,
-                        });
+                        toast.warning('Выберите дату и время');
                         return;
                       }
                       setStep(3);
                     }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
                   >
                     Далее
                   </button>
@@ -318,7 +319,9 @@ export default function BookingPage() {
                   <div className="flex items-center gap-2 text-sm text-purple-700">
                     <Scissors className="w-4 h-4" />
                     <span>
-                      {formData.service} · {formData.master} · {formData.date && new Date(formData.date).toLocaleDateString('ru-RU')} в {formData.time}
+                      {services.find(s => s.id === formData.service)?.name} · 
+                      {masters.find(m => m.id === formData.master)?.name} · 
+                      {formData.date && new Date(formData.date).toLocaleDateString('ru-RU')} в {formData.time}
                     </span>
                   </div>
                 </div>
@@ -400,15 +403,12 @@ export default function BookingPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={isLoading}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    disabled={isSubmitting}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                   >
-                    {isLoading ? (
+                    {isSubmitting ? (
                       <>
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         Запись...
                       </>
                     ) : (
@@ -424,7 +424,6 @@ export default function BookingPage() {
           </form>
         </div>
 
-        {/* Инфо */}
         <div className="mt-6 text-center text-sm text-gray-400">
           <p>Нажимая «Записаться», вы соглашаетесь с условиями обработки данных</p>
         </div>

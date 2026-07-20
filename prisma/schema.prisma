@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Master {
+  id        String    @id @default(cuid())
+  name      String
+  specialty String
+  rating    Float?    @default(0)
+  reviews   Int?      @default(0)
+  experience Int?     @default(0)
+  photo     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  duration    Int
+  price       Int
+  category    String?
+  popular     Boolean  @default(false)
+  image       String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bookings    Booking[]
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  clientName  String
+  clientPhone String
+  clientEmail String?
+  startTime   DateTime
+  endTime     DateTime
+  status      Status   @default(PENDING)
+  notes       String?
+  masterId    String
+  serviceId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  master      Master   @relation(fields: [masterId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id])
+}
+
+enum Status {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
