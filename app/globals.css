@@ -213,3 +213,38 @@ body {
 .animate-spin-slow {
   animation: spin-slow 2s linear infinite;
 }
+
+/* Стили для Sonner Toast */
+[data-sonner-toast] {
+  font-family: 'Inter', -apple-system, sans-serif !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  border-left: 4px solid #10B981 !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  border-left: 4px solid #EF4444 !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  border-left: 4px solid #F59E0B !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  border-left: 4px solid #7C3AED !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  background: #F3F4F6 !important;
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: #E5E7EB !important;
+}

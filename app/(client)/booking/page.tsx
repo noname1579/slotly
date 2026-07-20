@@ -3,7 +3,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles, Clock, User, Phone, Mail, Calendar, Scissors } from 'lucide-react';
+import { toast } from 'sonner';
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  Clock, 
+  User, 
+  Phone, 
+  Mail, 
+  Calendar, 
+  Scissors,
+  CheckCircle,
+  XCircle
+} from 'lucide-react';
 
 // Временные демо-данные (потом заменим на реальные)
 const services = [
@@ -29,6 +41,7 @@ const timeSlots = [
 
 export default function BookingPage() {
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     service: '',
     master: '',
@@ -44,10 +57,93 @@ export default function BookingPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('✅ Запись создана! Мы ждём вас ❤️');
-    console.log('Данные записи:', formData);
+    setIsLoading(true);
+
+    // Проверка заполнения полей
+    if (!formData.service || !formData.master || !formData.date || !formData.time || !formData.name || !formData.phone) {
+      toast.error('Заполните все обязательные поля', {
+        description: 'Пожалуйста, проверьте форму',
+        icon: <XCircle className="w-5 h-5" />,
+        duration: 3000,
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Имитация отправки
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // ===== ОТПРАВКА В TELEGRAM =====
+      try {
+        const bookingData = {
+          clientName: formData.name,
+          clientPhone: formData.phone,
+          clientEmail: formData.email || 'не указан',
+          service: formData.service,
+          master: formData.master,
+          date: new Date(formData.date).toLocaleDateString('ru-RU'),
+          time: formData.time,
+          notes: formData.notes || '',
+        };
+
+        const response = await fetch('/api/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bookingData),
+        });
+
+        if (!response.ok) {
+          console.error('Ошибка отправки в Telegram:', await response.text());
+        }
+      } catch (error) {
+        console.error('Ошибка отправки в Telegram:', error);
+      }
+
+      console.log('Данные записи:', formData);
+
+      // Кастомное уведомление об успехе
+      toast.custom((t) => (
+        <div className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-green-100 shadow-lg max-w-sm">
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">✅ Запись создана!</p>
+            <p className="text-sm text-gray-500">
+              {formData.service} · {formData.master} · {new Date(formData.date).toLocaleDateString('ru-RU')} в {formData.time}
+            </p>
+            <p className="text-sm text-gray-400 mt-1">Мы ждём вас! ❤️</p>
+          </div>
+        </div>
+      ), {
+        duration: 5000,
+      });
+
+      // Сброс формы
+      setFormData({
+        service: '',
+        master: '',
+        date: '',
+        time: '',
+        name: '',
+        phone: '',
+        email: '',
+        notes: '',
+      });
+      setStep(1);
+
+    } catch (error) {
+      toast.error('Ошибка при создании записи', {
+        description: 'Попробуйте еще раз или свяжитесь с нами по телефону',
+        icon: <XCircle className="w-5 h-5" />,
+        duration: 4000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -132,7 +228,17 @@ export default function BookingPage() {
 
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    if (!formData.service || !formData.master) {
+                      toast.warning('Выберите услугу и мастера', {
+                        description: 'Пожалуйста, заполните все поля',
+                        icon: <XCircle className="w-5 h-5" />,
+                        duration: 3000,
+                      });
+                      return;
+                    }
+                    setStep(2);
+                  }}
                   className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all"
                 >
                   Далее
@@ -186,7 +292,17 @@ export default function BookingPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep(3)}
+                    onClick={() => {
+                      if (!formData.date || !formData.time) {
+                        toast.warning('Выберите дату и время', {
+                          description: 'Пожалуйста, заполните все поля',
+                          icon: <XCircle className="w-5 h-5" />,
+                          duration: 3000,
+                        });
+                        return;
+                      }
+                      setStep(3);
+                    }}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all"
                   >
                     Далее
@@ -284,10 +400,23 @@ export default function BookingPage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all flex items-center justify-center gap-2"
+                    disabled={isLoading}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    Записаться
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Запись...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Записаться
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
