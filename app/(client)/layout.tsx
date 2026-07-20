@@ -1,7 +1,7 @@
 // app/(client)/layout.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -15,7 +15,7 @@ import {
   Heart,
   ArrowUpRight
 } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+// ❌ Удалите: import { ThemeToggle } from '@/components/ThemeToggle';
 import { PageLoader } from '@/components/PageLoader';
 
 export default function ClientLayout({
@@ -25,27 +25,6 @@ export default function ClientLayout({
 }) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-
-  // Отслеживаем тему
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    checkTheme();
-    
-    const observer = new MutationObserver(() => {
-      checkTheme();
-    });
-    
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-    
-    return () => observer.disconnect();
-  }, []);
 
   const navItems = [
     { href: '/', label: 'Главная' },
@@ -55,26 +34,22 @@ export default function ClientLayout({
     { href: '/contacts', label: 'Контакты' },
   ];
 
-  const headerClass = isDark 
-    ? 'bg-[#0F0A1A]/95 backdrop-blur-xl border-[#2A1A3E] shadow-lg shadow-black/20' 
-    : 'bg-white/95 backdrop-blur-xl border-[#F0E7FF] shadow-sm shadow-black/5';
-
   return (
-    <div className="min-h-screen flex flex-col bg-body">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* ===== HEADER ===== */}
-      <header className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${headerClass}`}>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-[#F0E7FF] shadow-sm shadow-black/5">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30 transition-transform group-hover:scale-105">
+              <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-200/50 transition-transform group-hover:scale-105">
                 <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
               <div>
-                <span className={`text-lg md:text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <span className="text-lg md:text-xl font-bold tracking-tight text-gray-900">
                   SLOTLY
                 </span>
-                <span className="hidden md:block text-[10px] font-medium tracking-[0.15em] uppercase text-gray-400 dark:text-gray-500">
+                <span className="hidden md:block text-[10px] font-medium tracking-[0.15em] uppercase text-gray-400">
                   Beauty Studio
                 </span>
               </div>
@@ -89,22 +64,18 @@ export default function ClientLayout({
                   className={`
                     relative px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
                     ${pathname === item.href 
-                      ? isDark 
-                        ? 'bg-purple-900/30 text-purple-400' 
-                        : 'bg-purple-50 text-purple-600'
-                      : isDark
-                        ? 'text-gray-400 hover:text-white hover:bg-white/5'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50/50'
+                      ? 'bg-purple-50 text-purple-600' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50/50'
                     }
                     ${item.highlight 
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:shadow-lg hover:shadow-purple-200/50 dark:hover:shadow-purple-900/30 hover:scale-[1.02]' 
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:shadow-lg hover:shadow-purple-200/50 hover:scale-[1.02]' 
                       : ''
                     }
                   `}
                 >
                   {item.label}
                   {pathname === item.href && !item.highlight && (
-                    <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full ${isDark ? 'bg-purple-400' : 'bg-purple-500'}`} />
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-purple-500" />
                   )}
                 </Link>
               ))}
@@ -112,14 +83,10 @@ export default function ClientLayout({
 
             {/* Right Side */}
             <div className="flex items-center gap-2 md:gap-3">
-              <ThemeToggle />
+              {/* ❌ Удалите: <ThemeToggle /> */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`lg:hidden w-9 h-9 md:w-10 md:h-10 rounded-xl transition-colors flex items-center justify-center ${
-                  isDark 
-                    ? 'hover:bg-white/5 text-white' 
-                    : 'hover:bg-gray-50/50 text-gray-900'
-                }`}
+                className="lg:hidden w-9 h-9 md:w-10 md:h-10 rounded-xl hover:bg-gray-50/50 transition-colors flex items-center justify-center text-gray-900"
               >
                 {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -129,7 +96,7 @@ export default function ClientLayout({
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className={`lg:hidden border-t ${isDark ? 'bg-[#0F0A1A]/95 border-[#2A1A3E]' : 'bg-white/95 border-[#F0E7FF]'} shadow-xl`}>
+          <div className="lg:hidden bg-white/95 border-t border-[#F0E7FF] shadow-xl">
             <div className="container mx-auto px-4 py-4">
               <nav className="flex flex-col gap-1">
                 {navItems.map((item) => (
@@ -140,12 +107,8 @@ export default function ClientLayout({
                     className={`
                       px-4 py-3 rounded-xl text-sm font-medium transition-all
                       ${pathname === item.href 
-                        ? isDark
-                          ? 'bg-purple-900/30 text-purple-400'
-                          : 'bg-purple-50 text-purple-600'
-                        : isDark
-                          ? 'text-gray-400 hover:bg-white/5'
-                          : 'text-gray-600 hover:bg-gray-50/50'
+                        ? 'bg-purple-50 text-purple-600' 
+                        : 'text-gray-600 hover:bg-gray-50/50'
                       }
                       ${item.highlight ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white text-center' : ''}
                     `}
@@ -165,9 +128,8 @@ export default function ClientLayout({
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-gray-900 dark:bg-gray-950 text-gray-400">
-        {/* Newsletter */}
-        <div className="border-b border-gray-800/50 md:py-18 py-8">
+      <footer className="bg-gray-900 text-gray-400">
+        <div className="border-b border-gray-800/50 py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-3">
@@ -195,13 +157,11 @@ export default function ClientLayout({
           </div>
         </div>
 
-        {/* Footer Main */}
-        <div className="container mx-auto px-4 py-16 md:py-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 md:py-16">
-            {/* Бренд */}
-            <div className="col-span-2 md:col-span-1 py-4 md:py-0">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 py-5 md:pt-10 md:pb-2">
+            <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-lg font-bold text-white">SLOTLY</span>
@@ -210,28 +170,29 @@ export default function ClientLayout({
                 Салон красоты премиум-класса. Создаём идеальные образы с 2015 года.
               </p>
               <div className="flex items-center gap-3 mt-4">
-                {/* Instagram */}
-                <a href="#" className="text-gray-500 hover:text-white transition-colors" aria-label="Instagram">
-                  <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                {/* Telegram */}
+                <a href="#" className="text-gray-500 hover:text-[#0088cc] transition-colors" aria-label="Telegram">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                   </svg>
                 </a>
-                {/* YouTube */}
-                <a href="#" className="text-gray-500 hover:text-white transition-colors" aria-label="YouTube">
-                  <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+
+                {/* WhatsApp */}
+                <a href="#" className="text-gray-500 hover:text-[#25D366] transition-colors" aria-label="WhatsApp">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>
                 </a>
-                {/* Facebook */}
-                <a href="#" className="text-gray-500 hover:text-[#1877F2] transition-colors" aria-label="Facebook">
-                  <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+
+                {/* ВКонтакте */}
+                <a href="#" className="text-gray-500 hover:text-[#0077FF] transition-colors" aria-label="ВКонтакте">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13.063 17.285c-.77.057-1.527-.008-2.213-.218-.764-.234-1.411-.721-1.962-1.278-1.092-1.106-1.875-2.49-2.697-3.807-1.413-2.265-2.697-4.625-4.065-6.934-.064-.108-.166-.189-.27-.254-.528-.331-1.084-.096-1.423.395-.251.363-.264.833-.109 1.242.572 1.512 1.271 2.967 1.949 4.434 1.681 3.646 3.628 7.178 5.727 10.55.86 1.383 1.963 2.439 3.455 2.98 1.486.541 2.928.341 4.12-.877.849-.866 1.226-2.004 1.156-3.19-.05-.854-.857-1.288-1.546-1.472-.297-.079-.602-.167-.904-.226.053-.059.109-.115.169-.167 2.154-1.888 3.167-4.399 3.644-7.089.1-.556-.288-1.073-.84-1.161-.504-.084-.975.197-1.199.633-.386.747-.717 1.526-1.079 2.286-.64 1.343-1.349 2.653-2.171 3.889-1.377 2.07-2.746 4.141-4.715 5.709.037-.068.081-.134.123-.202 1.166-1.89 2.14-3.884 3.039-5.929.464-1.055.891-2.131 1.339-3.19.221-.523-.002-1.149-.577-1.344-1.014-.347-1.833.414-2.236 1.218-.334.667-.613 1.365-.912 2.049-.689 1.573-1.439 3.117-2.208 4.65-.297.594-.6 1.188-.942 1.755-.105.174-.248.326-.417.436.036-.27.071-.54.104-.811.416-3.38.596-6.813-.021-10.156-.061-.335-.202-.658-.456-.886-.316-.286-.733-.378-1.151-.362-.236.009-.468.091-.657.239-.787.619-1.247 1.611-1.122 2.612.066.525.356 1.597.832 3.17-.135.3-.276.597-.422.892-.636 1.282-1.297 2.552-2.008 3.789-.832 1.447-1.72 2.862-2.835 4.117-.247-.848-.285-1.771-.079-2.635.235-.989.735-1.86 1.162-2.737.57-1.17 1.088-2.371 1.58-3.578.33-.811.636-1.635.969-2.443.146-.353.329-.712.39-1.105.141-.918-.112-1.889-.759-2.537-.965-.969-2.508-.627-3.208.41-.31.457-.506.993-.576 1.547-.148 1.159-.092 2.343.058 3.506.197 1.51.679 2.954 1.081 4.419.698 2.544 1.557 5.04 3.137 7.08.693.895 1.548 1.603 2.514 2.049.542.25 1.133.363 1.724.332.673-.035 1.347-.269 1.933-.63.625-.385 1.131-.924 1.544-1.536.258-.383.481-.789.722-1.181.767-.45 1.622-.83 2.354-1.454 1.204-1.026 2.133-2.312 2.949-3.667.247-.41.489-.824.749-1.225.593-.911 1.337-1.715 1.958-2.605.853-1.224 1.608-2.522 2.352-3.824.225-.393.491-.773.702-1.18.132-.254.179-.562.028-.805-.115-.185-.329-.3-.548-.299z"/>
                   </svg>
                 </a>
               </div>
             </div>
 
-            {/* Услуги */}
             <div>
               <h5 className="text-white font-semibold text-xs uppercase tracking-wider mb-3.5 opacity-80">
                 Услуги
@@ -244,7 +205,6 @@ export default function ClientLayout({
               </ul>
             </div>
 
-            {/* Информация */}
             <div>
               <h5 className="text-white font-semibold text-xs uppercase tracking-wider mb-3.5 opacity-80">
                 Информация
@@ -257,7 +217,6 @@ export default function ClientLayout({
               </ul>
             </div>
 
-            {/* Контакты */}
             <div>
               <h5 className="text-white font-semibold text-xs uppercase tracking-wider mb-3.5 opacity-80">
                 Контакты
@@ -287,14 +246,13 @@ export default function ClientLayout({
             </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="py-8 border-t border-gray-800/50 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+          <div className="border-t border-gray-800/50 mt-12 pt-8 pb-5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
             <p className="text-center md:text-left">
               © {new Date().getFullYear()} SLOTLY Beauty Studio. Все права защищены.
             </p>
             <div className="flex items-center gap-1 text-purple-400">
+              <span className="text-gray-500">Сделано для вашей красоты</span>
               <Heart className="w-3.5 h-3.5" />
-              <span className="text-gray-500">Сделано с ❤️ для вашей красоты</span>
             </div>
           </div>
         </div>
